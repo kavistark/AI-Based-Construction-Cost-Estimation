@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center g-4">
+
+        <!-- Cost Summary Card -->
+        <div class="col-lg-7">
+            <div class="card glass shadow-lg border-0 rounded-4 p-4 p-xl-5 position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100" style="height:3px;background:linear-gradient(90deg,var(--primary),var(--secondary));"></div>
+
+                <div class="text-center mb-4">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3 border border-success border-opacity-25" style="width:70px;height:70px;">
+                        <i class="fa-solid fa-circle-check text-success fs-2"></i>
+                    </div>
+                    <h2 class="fw-bold text-white mb-1">Estimation Complete!</h2>
+                    <p class="text-secondary mb-0 small">GradientBoosting ML Model · R² = 0.9997 · Trained on 10,000 records</p>
+                </div>
+
+                {% if estimation %}
+                <!-- Total -->
+                <div class="bg-dark bg-opacity-50 p-4 rounded-4 border border-secondary border-opacity-25 mb-4 text-center shadow-inner">
+                    <h3 class="gradient-text display-4 fw-bold mb-1">₹ {{ estimation.total_cost|floatformat:0 }}</h3>
+                    <p class="text-muted small mb-0">Total Estimated Construction Cost</p>
+                </div>
+
+                <!-- Breakdown -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-dark bg-opacity-25 rounded-3 border-start border-primary border-3 h-100">
+                            <small class="text-secondary d-block mb-1 text-uppercase tracking-wider"><i class="fa-solid fa-boxes-stacked text-primary me-1"></i> Materials</small>
+                            <span class="fw-bold fs-5 text-white">₹ {{ estimation.breakdown.materials|floatformat:0 }}</span>
+                            <div class="text-secondary small mt-1">60% of total</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-dark bg-opacity-25 rounded-3 border-start border-warning border-3 h-100">
+                            <small class="text-secondary d-block mb-1 text-uppercase tracking-wider"><i class="fa-solid fa-users-gear text-warning me-1"></i> Labor</small>
+                            <span class="fw-bold fs-5 text-white">₹ {{ estimation.breakdown.labor|floatformat:0 }}</span>
+                            <div class="text-secondary small mt-1">25% of total</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-dark bg-opacity-25 rounded-3 border-start border-info border-3 h-100">
+                            <small class="text-secondary d-block mb-1 text-uppercase tracking-wider"><i class="fa-solid fa-paint-roller text-info me-1"></i> Interior & Paint</small>
+                            <span class="fw-bold fs-5 text-white">₹ {{ estimation.breakdown.interiors_paint|floatformat:0 }}</span>
+                            <div class="text-secondary small mt-1">15% of total</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Summary -->
+                {% if inputs %}
+                <div class="bg-dark bg-opacity-25 rounded-3 p-3 border border-secondary border-opacity-15 mb-4">
+                    <p class="text-secondary small text-uppercase tracking-wider mb-2 fw-bold"><i class="fa-solid fa-sliders me-2"></i>Your Inputs</p>
+                    <div class="row g-2 small">
+                        <div class="col-6 col-md-3"><span class="text-muted">Area:</span> <span class="text-white fw-medium">{{ inputs.area }} sq ft</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted">House:</span> <span class="text-white fw-medium">{{ inputs.house_type }}</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted">Material:</span> <span class="text-white fw-medium">{{ inputs.material|truncatechars:12 }}</span></div>
+                        <div class="col-6 col-md-3"><span class="text-muted">Theme:</span> <span class="text-white fw-medium">{{ inputs.theme|truncatechars:14 }}</span></div>
+                    </div>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-4 opacity-50">
+                    <p class="text-secondary">No estimation data. Please submit the form first.</p>
+                </div>
+                {% endif %}
+
+                <a href="{% url 'home' %}" class="btn btn-outline-light w-100 rounded-pill py-3 fw-bold">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Calculate Another Estimate
+                </a>
+            </div>
+        </div>
+
+        <!-- Blueprint Card -->
+        <div class="col-lg-5">
+            <div class="card glass shadow-lg border-0 rounded-4 p-4 position-relative overflow-hidden h-100">
+                <div class="position-absolute top-0 start-0 w-100" style="height:3px;background:linear-gradient(90deg,var(--secondary),var(--primary));"></div>
+
+                <div class="d-flex align-items-center gap-2 mb-4 border-bottom border-light border-opacity-10 pb-3">
+                    <div class="bg-info bg-opacity-10 text-info p-2 rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                        <i class="fa-solid fa-drafting-compass"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-white mb-0">AI Blueprint</h5>
+                        <small class="text-secondary opacity-75">Generated by Gemini AI</small>
+                    </div>
+                </div>
+
+                {% if blueprint_image %}
+                <div class="blueprint-container rounded-3 overflow-hidden border border-info border-opacity-25" style="position:relative;">
+                    <img src="{{ blueprint_image }}" alt="AI Generated Floor Plan Blueprint" class="w-100 rounded-3" style="object-fit:cover;">
+                    <div class="position-absolute bottom-0 start-0 end-0 p-2 text-center" style="background:linear-gradient(transparent,rgba(0,0,0,.8));">
+                        <small class="text-info fw-bold tracking-wider text-uppercase"><i class="fa-solid fa-wand-magic-sparkles me-1"></i>Gemini AI Generated</small>
+                    </div>
+                </div>
+                <div class="mt-3 text-center">
+                    <a href="{{ blueprint_image }}" download="blueprint.png" class="btn btn-sm btn-outline-info rounded-pill px-4">
+                        <i class="fa-solid fa-download me-1"></i> Download Blueprint
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-flex flex-column align-items-center justify-content-center flex-grow-1 py-5 text-center opacity-50" style="min-height:250px;">
+                    <i class="fa-solid fa-drafting-compass fs-1 text-info mb-3"></i>
+                    <h6 class="text-white tracking-wider mb-2">Blueprint Not Generated</h6>
+                    <p class="text-secondary small mb-0">Set a valid <code>GEMINI_API_KEY</code> in <code>settings.py</code> to enable AI blueprint generation.</p>
+                    <div class="mt-3 p-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-start small">
+                        <code class="text-info">GEMINI_API_KEY = "AIza…"</code>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+.tracking-wider{letter-spacing:.12em}
+.shadow-inner{box-shadow:inset 0 2px 15px rgba(0,0,0,.5)}
+.blueprint-container img{animation:fadeIn .5s ease-in}
+@keyframes fadeIn{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
+</style>
+{% endblock %}

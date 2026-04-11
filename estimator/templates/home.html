@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid h-100 p-0">
+    <div class="row h-100 g-4">
+
+        <!-- LEFT: Input Panel -->
+        <div class="col-lg-6 d-flex flex-column h-100">
+            <div class="card glass border-0 rounded-4 shadow-lg flex-grow-1 h-100 position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100" style="height:3px;background:linear-gradient(90deg,var(--primary),var(--secondary));"></div>
+                <div class="card-body p-4 p-xl-5 d-flex flex-column overflow-auto custom-scrollbar">
+                    <form action="{% url 'home' %}" method="POST" class="w-100 my-auto" id="estimationForm">
+                        {% csrf_token %}
+
+                        <div class="d-flex align-items-center gap-3 mb-4 border-bottom border-light border-opacity-10 pb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle" style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fa-solid fa-crosshairs fs-4"></i>
+                            </div>
+                            <div>
+                                <h2 class="h4 fw-bold mb-0 text-white text-uppercase tracking-wider">Input Parameters</h2>
+                                <small class="text-secondary opacity-75">GradientBoosting ML · R² = 0.9997</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Plot Area (sq ft)</label>
+                                <input type="number" id="plot_area" name="plot_area" class="form-control form-control-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 text-light py-3" placeholder="e.g., 1200" required oninput="liveEstimate()">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Number of Rooms</label>
+                                <select id="rooms" name="rooms" class="form-select form-select-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 text-light py-3" onchange="liveEstimate()">
+                                    <option value="1">1 Room</option>
+                                    <option value="2">2 Rooms</option>
+                                    <option value="3" selected>3 Rooms</option>
+                                    <option value="4">4 Rooms</option>
+                                    <option value="5">5+ Rooms</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Material Quality</label>
+                                <select id="material" name="material" class="form-select form-select-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 text-light py-3" onchange="liveEstimate()">
+                                    <option value="Low (Basic materials)">Low – Basic</option>
+                                    <option value="Medium (Standard materials)" selected>Medium – Standard</option>
+                                    <option value="High (Premium materials)">High – Premium</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Paint Type</label>
+                                <select id="paint" name="paint" class="form-select form-select-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 text-light py-3" onchange="liveEstimate()">
+                                    <option value="Basic Paint">Basic Paint</option>
+                                    <option value="Emulsion Paint" selected>Emulsion Paint</option>
+                                    <option value="Premium Paint">Premium Paint</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">House Type</label>
+                                <select id="house_type" name="house_type" class="form-select form-select-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 text-light py-3" onchange="liveEstimate()">
+                                    <option value="1BHK">1 BHK</option>
+                                    <option value="2BHK" selected>2 BHK</option>
+                                    <option value="3BHK">3 BHK</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Room Type (Interior)</label>
+                                <select id="room_type" name="room_type" class="form-select form-select-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 text-light py-3" onchange="liveEstimate()">
+                                    <option value="Bedroom" selected>Bedroom</option>
+                                    <option value="Living Room">Living Room</option>
+                                    <option value="Kitchen">Kitchen</option>
+                                    <option value="Bathroom">Bathroom</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Color Theme</label>
+                                <select id="theme" name="theme" class="form-select form-select-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 text-light py-3" onchange="liveEstimate()">
+                                    <option value="Classic White" selected>Classic White</option>
+                                    <option value="White & Grey">White & Grey</option>
+                                    <option value="Warm Walnut & Ivory">Warm Walnut & Ivory</option>
+                                    <option value="Sage Green & White">Sage Green & White</option>
+                                    <option value="Monochrome Black & White">Monochrome B&W</option>
+                                    <option value="Charcoal & Teal">Charcoal & Teal</option>
+                                    <option value="Navy & Gold">Navy & Gold</option>
+                                    <option value="Pastel Blue & White">Pastel Blue & White</option>
+                                    <option value="Dusty Rose & Grey">Dusty Rose & Grey</option>
+                                    <option value="Terracotta & Off-White">Terracotta & Off-White</option>
+                                    <option value="Olive Green & Wood">Olive Green & Wood</option>
+                                    <option value="Mustard & Teal">Mustard & Teal</option>
+                                    <option value="Beige & Cream">Beige & Cream</option>
+                                    <option value="Bold Red & Charcoal">Bold Red & Charcoal</option>
+                                    <option value="Earthy Tones">Earthy Tones</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Budget Range</label>
+                                <select id="budget_range" name="budget_range" class="form-select form-select-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 text-light py-3" onchange="liveEstimate()">
+                                    <option value="₹2L – ₹5L">Below ₹5 Lakhs</option>
+                                    <option value="₹5L – ₹10L" selected>₹5 – ₹10 Lakhs</option>
+                                    <option value="₹10L – ₹15L">₹10 – ₹15 Lakhs</option>
+                                    <option value="₹15L – ₹25L">₹15 – ₹25 Lakhs</option>
+                                    <option value="₹25L – ₹40L">₹25 – ₹40 Lakhs</option>
+                                    <option value="₹40L – ₹60L">Above ₹40 Lakhs</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4 pt-2">
+                            <button type="submit" class="btn btn-primary btn-glow btn-lg flex-grow-1 rounded-pill py-3 fw-bold shadow text-uppercase tracking-wider">
+                                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generate Blueprint + Save
+                            </button>
+                        </div>
+                        <p class="text-center text-secondary small mt-2 mb-0 opacity-50">
+                            <i class="fa-solid fa-image me-1"></i>Gemini AI will generate a floor blueprint
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Live Output -->
+        <div class="col-lg-6 d-flex flex-column h-100">
+            <div class="card glass border-0 rounded-4 shadow-lg flex-grow-1 h-100 position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100" style="height:3px;background:linear-gradient(90deg,var(--secondary),var(--primary));"></div>
+                <div class="card-body p-4 p-xl-5 d-flex flex-column align-items-center justify-content-center text-center custom-scrollbar overflow-auto">
+
+                    <div class="w-100">
+                        <div class="d-flex align-items-center justify-content-center gap-3 mb-4 border-bottom border-light border-opacity-10 pb-3">
+                            <i class="fa-solid fa-microchip fs-4 text-secondary"></i>
+                            <h2 class="h4 fw-bold text-white text-uppercase tracking-wider mb-0">Live Prediction</h2>
+                            <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25 small" id="ml_badge">ML Ready</span>
+                        </div>
+
+                        <!-- Cost Display -->
+                        <div class="bg-dark bg-opacity-50 p-4 rounded-4 border border-secondary border-opacity-25 mb-4 shadow-inner position-relative">
+                            <div id="loading_spinner" class="position-absolute top-50 start-50 translate-middle d-none">
+                                <div class="spinner-border text-primary" role="status"></div>
+                            </div>
+                            <h1 class="gradient-text display-3 fw-bold mb-0" id="live_total_cost">₹ 0</h1>
+                            <p class="text-secondary fw-bold small text-uppercase mb-0 mt-2 tracking-wider">AI Estimated Total Cost</p>
+                        </div>
+
+                        <!-- Breakdown -->
+                        <div class="row g-3 text-start w-100 px-lg-2 mb-4">
+                            <div class="col-12 border-bottom border-light border-opacity-10 py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-secondary fw-bold text-uppercase small tracking-wider"><i class="fa-solid fa-boxes-stacked me-3 text-primary fs-5"></i>Materials (60%)</span>
+                                    <span class="fw-bold fs-4 text-white" id="live_materials">₹ 0</span>
+                                </div>
+                            </div>
+                            <div class="col-12 border-bottom border-light border-opacity-10 py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-secondary fw-bold text-uppercase small tracking-wider"><i class="fa-solid fa-users-gear me-3 text-warning fs-5"></i>Labor (25%)</span>
+                                    <span class="fw-bold fs-4 text-white" id="live_labor">₹ 0</span>
+                                </div>
+                            </div>
+                            <div class="col-12 py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-secondary fw-bold text-uppercase small tracking-wider"><i class="fa-solid fa-paint-roller me-3 text-info fs-5"></i>Interior & Paint (15%)</span>
+                                    <span class="fw-bold fs-4 text-white" id="live_interiors">₹ 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confidence bar -->
+                        <div class="w-100 px-lg-2">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-secondary text-uppercase tracking-wider">Model Confidence</small>
+                                <small class="text-success fw-bold">99.97%</small>
+                            </div>
+                            <div class="progress" style="height:6px;border-radius:10px;">
+                                <div class="progress-bar bg-success" style="width:99.97%;border-radius:10px;"></div>
+                            </div>
+                            <small class="text-muted opacity-50 mt-1 d-block">GradientBoosting · 10,000 records · R²=0.9997</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-scrollbar::-webkit-scrollbar{width:6px}
+.custom-scrollbar::-webkit-scrollbar-track{background:rgba(0,0,0,.1)}
+.custom-scrollbar::-webkit-scrollbar-thumb{background:rgba(139,92,246,.3);border-radius:10px}
+.shadow-inner{box-shadow:inset 0 2px 15px rgba(0,0,0,.5)}
+.tracking-wider{letter-spacing:.12em}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+.pulse-anim{animation:pulse .25s ease-in-out}
+</style>
+
+<script>
+let estimateTimer = null;
+
+function fmt(n){ return '₹ ' + new Intl.NumberFormat('en-IN').format(Math.round(n)); }
+
+function liveEstimate(){
+    clearTimeout(estimateTimer);
+    estimateTimer = setTimeout(_doEstimate, 350);
+}
+
+function _doEstimate(){
+    const area = parseFloat(document.getElementById('plot_area').value) || 0;
+    if(area <= 0){ clearOutputs(); return; }
+
+    document.getElementById('loading_spinner').classList.remove('d-none');
+    document.getElementById('ml_badge').textContent = 'Computing…';
+    document.getElementById('ml_badge').className = 'badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-25 small';
+
+    const payload = {
+        area: area,
+        rooms: document.getElementById('rooms').value,
+        material: document.getElementById('material').value,
+        paint: document.getElementById('paint').value,
+        house_type: document.getElementById('house_type').value,
+        room_type: document.getElementById('room_type').value,
+        theme: document.getElementById('theme').value,
+        budget_range: document.getElementById('budget_range').value,
+    };
+
+    fetch('/api/estimate/', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','X-CSRFToken': getCookie('csrftoken')},
+        body: JSON.stringify(payload),
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('loading_spinner').classList.add('d-none');
+        document.getElementById('ml_badge').textContent = 'ML Ready';
+        document.getElementById('ml_badge').className = 'badge bg-success bg-opacity-20 text-success border border-success border-opacity-25 small';
+
+        const el = document.getElementById('live_total_cost');
+        el.textContent = fmt(data.total_cost);
+        el.classList.remove('pulse-anim');
+        void el.offsetWidth;
+        el.classList.add('pulse-anim');
+
+        document.getElementById('live_materials').textContent = fmt(data.breakdown.materials);
+        document.getElementById('live_labor').textContent = fmt(data.breakdown.labor);
+        document.getElementById('live_interiors').textContent = fmt(data.breakdown.interiors_paint);
+    })
+    .catch(()=>{ document.getElementById('loading_spinner').classList.add('d-none'); });
+}
+
+function clearOutputs(){
+    ['live_total_cost','live_materials','live_labor','live_interiors'].forEach(id=>{
+        document.getElementById(id).textContent = '₹ 0';
+    });
+}
+
+function getCookie(name){
+    const v = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+}
+
+document.addEventListener('DOMContentLoaded', liveEstimate);
+</script>
+{% endblock %}
