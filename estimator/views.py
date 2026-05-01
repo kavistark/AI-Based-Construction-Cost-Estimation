@@ -16,11 +16,11 @@ from django.conf import settings
 
 from .models import ProjectEstimate
 from .ml_model import predict_construction_cost
-
+ 
 # ──────────────────────────────────────────────────────────────────────────────
 # Gemini Blueprint Generator
 # ──────────────────────────────────────────────────────────────────────────────
-GEMINI_API_KEY = getattr(settings, 'GEMINI_API_KEY', 'YOUR_GEMINI_API_KEY_HERE')
+GEMINI_API_KEY = getattr(settings, 'GEMINI_API_KEY', 'AIzaSyD7d4ODqGrRM7AflV5KVLbTiaymp-36_0M')
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
     "gemini-2.0-flash-exp-image-generation:generateContent?key=" + GEMINI_API_KEY
@@ -193,3 +193,138 @@ def profile_view(request):
     else:
         projects = ProjectEstimate.objects.all().order_by('-created_at')
     return render(request, 'profile.html', {'projects': projects})
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Image Construction Style Transformer
+# ──────────────────────────────────────────────────────────────────────────────
+THEMES = {
+    "🏛️ Modern Minimalist": {
+        "prompt": "modern minimalist interior design, clean white walls, neutral tones, sleek furniture, bright natural light, Scandinavian style, professional interior photography",
+        "negative": "cluttered, dark, old, dirty, low quality",
+    },
+    "🌿 Biophilic / Nature": {
+        "prompt": "biophilic interior design, sage green walls, natural wood furniture, indoor plants, warm earthy tones, organic textures, botanical decor, cozy living space",
+        "negative": "artificial, plastic, dark, cluttered",
+    },
+    "🌊 Coastal / Beach": {
+        "prompt": "coastal beach house interior, soft blue walls, white furniture, nautical accents, driftwood decor, breezy airy feel, sandy beige tones, ocean-inspired",
+        "negative": "dark, heavy furniture, industrial",
+    },
+    "🖤 Industrial Loft": {
+        "prompt": "industrial loft interior design, exposed brick walls, dark charcoal grey, metal fixtures, Edison bulbs, concrete floors, urban chic style",
+        "negative": "bright pastel, floral, rustic cottage",
+    },
+    "👑 Luxury / Glam": {
+        "prompt": "luxury glamorous interior design, deep navy or emerald walls, gold accents, velvet furniture, crystal chandelier, marble surfaces, opulent elegant style",
+        "negative": "cheap, minimal, plain, dull",
+    },
+    "🌸 Cottagecore / Romantic": {
+        "prompt": "cottagecore romantic interior design, soft pastel pink walls, floral wallpaper, vintage furniture, lace curtains, warm candlelit glow, cozy feminine aesthetic",
+        "negative": "modern, industrial, dark, concrete",
+    },
+    "🎨 Bohemian / Eclectic": {
+        "prompt": "bohemian eclectic interior design, terracotta orange walls, colorful layered rugs, rattan furniture, macrame wall art, warm jewel tones, boho chic style",
+        "negative": "sterile, plain, minimalist",
+    },
+    "❄️ Arctic / Monochrome": {
+        "prompt": "arctic monochrome interior design, crisp white walls, icy blue accents, grey furniture, frosted glass, cool tones, ultra-clean Scandinavian Nordic style",
+        "negative": "warm colors, wood, rustic, colorful",
+    },
+}
+
+PAINT_COLORS = {
+    "Warm White": "warm white painted walls",
+    "Sage Green": "sage green painted walls",
+    "Navy Blue": "deep navy blue painted walls",
+    "Terracotta": "terracotta orange painted walls",
+    "Charcoal Grey": "dark charcoal grey painted walls",
+    "Blush Pink": "soft blush pink painted walls",
+    "Emerald Green": "rich emerald green painted walls",
+    "Cream / Beige": "warm cream beige painted walls",
+    "Sky Blue": "light sky blue painted walls",
+    "Midnight Black": "matte black painted walls",
+}
+
+def image_style_view(request):
+    if request.method == 'POST' and request.FILES.get('image'):
+        import os
+        import base64
+        import requests
+        from io import BytesIO
+        from PIL import Image
+        from django.conf import settings
+        from django.http import JsonResponse
+        from django.contrib import messages
+        
+        uploaded_file = request.FILES['image']
+        try:
+            pil_image = Image.open(uploaded_file).convert('RGB')
+            # Resize image to 1024x1024 for SDXL
+            pil_image = pil_image.resize((1024, 1024), Image.Resampling.LANCZOS)
+            buffer = BytesIO()
+            pil_image.save(buffer, format="PNG")
+            image_bytes = buffer.getvalue()
+            
+            paint_color = request.POST.get('paint', 'Sage Green')
+            theme_name = request.POST.get('theme', '🌿 Biophilic / Nature')
+            strength = float(request.POST.get('strength', 0.65))
+            
+            stability_api_key = getattr(settings, 'STABILITY_API_KEY', os.environ.get("STABILITY_API_KEY", "sk-dFO2nbMGMcW8hDk2hbhQjAOh0Wnvn8tu3DufxmamZTOwsGnY"))
+            stability_url = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image"
+            
+            theme = THEMES.get(theme_name, THEMES["🌿 Biophilic / Nature"])
+            color_desc = PAINT_COLORS.get(paint_color, PAINT_COLORS["Sage Green"])
+            
+            full_prompt = (
+                f"{color_desc}, {theme['prompt']}, "
+                "high resolution, photorealistic, interior photography, 8K quality"
+            )
+            
+            response = requests.post(
+                stability_url,
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": f"Bearer {stability_api_key}",
+                },
+                files={"init_image": ("room.png", image_bytes, "image/png")},
+                data={
+                    "text_prompts[0][text]": full_prompt,
+                    "text_prompts[0][weight]": 1.0,
+                    "text_prompts[1][text]": theme["negative"],
+                    "text_prompts[1][weight]": -1.0,
+                    "init_image_mode": "IMAGE_STRENGTH",
+                    "image_strength": 1.0 - strength,
+                    "cfg_scale": 7,
+                    "samples": 1,
+                    "steps": 30,
+                    "style_preset": "photographic",
+                },
+                timeout=120,
+            )
+            
+            if response.status_code != 200:
+                error_msg = f"API Error {response.status_code}: {response.text[:300]}"
+                if request.GET.get('ajax'):
+                    return JsonResponse({'error': error_msg}, status=400)
+                messages.error(request, error_msg)
+                return redirect('image_style')
+                
+            data = response.json()
+            img_b64 = data["artifacts"][0]["base64"]
+            output_image = f"data:image/png;base64,{img_b64}"
+            
+            if request.GET.get('ajax'):
+                return JsonResponse({'output_image': output_image})
+            
+            return render(request, 'upload_style.html', {'output_image': output_image})
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            if request.GET.get('ajax'):
+                return JsonResponse({'error': str(e)}, status=500)
+            from django.shortcuts import redirect
+            messages.error(request, f"Error processing image: {str(e)}")
+            return redirect('image_style')
+
+    return render(request, 'upload_style.html')
