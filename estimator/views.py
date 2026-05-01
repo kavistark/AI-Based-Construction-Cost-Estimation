@@ -248,6 +248,15 @@ PAINT_COLORS = {
 
 def image_style_view(request):
     if request.method == 'POST' and request.FILES.get('image'):
+        if not request.user.is_authenticated:
+            from django.http import JsonResponse
+            from django.shortcuts import redirect
+            from django.contrib import messages
+            if request.GET.get('ajax'):
+                return JsonResponse({'error': 'You must be logged in to use this feature.'}, status=403)
+            messages.error(request, "You must be logged in to use this feature.")
+            return redirect('login')
+            
         import os
         import base64
         import requests

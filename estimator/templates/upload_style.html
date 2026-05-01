@@ -11,6 +11,7 @@
             </h2>
             <p class="text-center mb-4" style="color: #8892b0; font-size: 0.95rem;">Upload a photo of your room or building, and our AI filter will convert it into a sleek technical blueprint.</p>
             
+            {% if user.is_authenticated %}
             <form id="styleForm" method="POST" enctype="multipart/form-data" class="d-flex flex-column align-items-center mb-0">
                 {% csrf_token %}
                 <div class="mb-3 w-100 p-4 rounded-3 text-center" style="border: 2px dashed rgba(100, 255, 218, 0.3); background: rgba(0,0,0,0.2);">
@@ -90,6 +91,18 @@
                 {% for message in messages %}
                 <div class="alert alert-danger bg-danger bg-opacity-25 text-white border-0">{{ message }}</div>
                 {% endfor %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4 border border-primary border-opacity-25" style="width: 75px; height: 75px;">
+                    <i class="fa-solid fa-lock fs-2"></i>
+                </div>
+                <h3 class="fw-bold text-white mb-3">Authentication Required</h3>
+                <p class="text-secondary mb-4">You must be logged in to access the AI Style Transformer. Create an account or login to continue.</p>
+                <a href="{% url 'login' %}?next={% url 'image_style' %}" class="btn btn-primary btn-glow btn-lg w-100 rounded-pill py-3 fw-bold shadow">
+                    Login to Website <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
             </div>
             {% endif %}
         </div>
