@@ -1,6 +1,6 @@
 """
 ConstructAI — Views
-Upgraded with: real ML model, Gemini blueprint generation, full auth.
+Upgraded with: real ML model, full auth.
 """
 import json
 import base64
@@ -17,48 +17,6 @@ from django.conf import settings
 from .models import ProjectEstimate
 from .ml_model import predict_construction_cost
  
-# ──────────────────────────────────────────────────────────────────────────────
-# Gemini Blueprint Generator
-# ──────────────────────────────────────────────────────────────────────────────
-GEMINI_API_KEY = getattr(settings, 'GEMINI_API_KEY', 'AIzaSyD7d4ODqGrRM7AflV5KVLbTiaymp-36_0M')
-GEMINI_URL = (
-    "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-2.0-flash-exp-image-generation:generateContent?key=" + GEMINI_API_KEY
-)
-
-def generate_blueprint_image(house_type, rooms, room_type, theme, area):
-    """Call Gemini to generate a floor-plan / blueprint image."""
-    prompt = (
-        f"Create a clean, professional architectural floor plan blueprint for a {house_type} "
-        f"Indian apartment. Area: {area} sq ft, {rooms} rooms, focus on {room_type}. "
-        f"Interior theme: {theme}. "
-        "Style: technical blueprint drawing with blue background, white lines, room labels, "
-        "dimensions noted. Top-down orthographic view. Clean, minimal, professional."
-    )
-    payload = json.dumps({
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]}
-    }).encode()
-
-    req = urllib.request.Request(
-        GEMINI_URL,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read())
-        for part in data.get("candidates", [{}])[0].get("content", {}).get("parts", []):
-            if part.get("inlineData"):
-                b64 = part["inlineData"]["data"]
-                mime = part["inlineData"].get("mimeType", "image/png")
-                return f"data:{mime};base64,{b64}"
-    except Exception as e:
-        print(f"Gemini error: {e}")
-    return None
-
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Home / Estimate
 # ──────────────────────────────────────────────────────────────────────────────
@@ -84,17 +42,7 @@ def home_view(request):
             budget_range=budget_range,
         )
 
-        blueprint_image = None
         if estimation['total_cost'] > 0:
-            # Generate Gemini blueprint
-            blueprint_image = generate_blueprint_image(
-                house_type=house_type,
-                rooms=rooms,
-                room_type=room_type,
-                theme=theme,
-                area=plot_area,
-            )
-
             ProjectEstimate.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 plot_area=plot_area,
@@ -109,7 +57,6 @@ def home_view(request):
             )
             return render(request, 'result.html', {
                 'estimation': estimation,
-                'blueprint_image': blueprint_image,
                 'inputs': {
                     'area': plot_area, 'rooms': rooms, 'material': material,
                     'paint': paint, 'house_type': house_type, 'room_type': room_type,
@@ -121,7 +68,7 @@ def home_view(request):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# AJAX live estimate (no DB save, no blueprint)
+# AJAX live estimate (no DB save)
 # ──────────────────────────────────────────────────────────────────────────────
 def ajax_estimate(request):
     if request.method == 'POST':
@@ -285,7 +232,7 @@ def image_style_view(request):
             else:
                 stability_api_key = getattr(settings, 'STABILITY_API_KEY', os.environ.get("STABILITY_API_KEY", "sk-QsuHoSopMDiy4cc1oBEe3SO2HzhMA2qKUBLPTxLKqH5iWoQU"))
                 
-            stability_url = "https://api.stability.ai/v2beta/stable-image/generate/ultra"
+            stability_url = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
             
             theme = THEMES.get(theme_name, THEMES["🌿 Biophilic / Nature"])
             color_desc = PAINT_COLORS.get(paint_color, PAINT_COLORS["Sage Green"])
@@ -301,9 +248,13 @@ def image_style_view(request):
                     "authorization": f"Bearer {stability_api_key}",
                     "accept": "image/*"
                 },
-                files={"none": ''},
+                files={
+                    "image": ("image.png", image_bytes, "image/png")
+                },
                 data={
                     "prompt": full_prompt,
+                    "mode": "image-to-image",
+                    "strength": strength,
                     "output_format": "webp",
                 },
                 timeout=120,
@@ -315,26 +266,34 @@ def image_style_view(request):
                 from PIL import ImageEnhance, ImageOps, ImageFilter, ImageChops
                 import urllib.parse
                 
+                FALLBACK_COLORS = {
+                    "Warm White": ("#2a2a2a", "#fffff0"),
+                    "Sage Green": ("#1c2e22", "#9dc183"),
+                    "Navy Blue": ("#051024", "#203a66"),
+                    "Terracotta": ("#3d1c10", "#cc664d"),
+                    "Charcoal Grey": ("#101010", "#444444"),
+                    "Blush Pink": ("#38202b", "#e09ebb"),
+                    "Emerald Green": ("#082414", "#3d9e60"),
+                    "Cream / Beige": ("#2a251a", "#e8dec3"),
+                    "Sky Blue": ("#102436", "#87bde0"),
+                    "Midnight Black": ("#000000", "#222222"),
+                }
+                
                 try:
-                    # 1. Generate realistic text-to-image based on the theme
-                    safe_prompt = urllib.parse.quote(full_prompt)
-                    poll_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=1024&height=1024&nologo=true"
-                    poll_response = requests.get(poll_url, timeout=30)
-                    
-                    if poll_response.status_code == 200:
-                        gen_img = Image.open(BytesIO(poll_response.content)).convert('RGB')
-                        
-                        # Use the pure prompted image directly without blending the original structure
-                        mock_image = gen_img
-                    else:
-                        raise Exception("Pollinations API failed")
-                        
-                except Exception as e:
-                    print(f"Free API fallback failed: {e}")
-                    # Ultimate fallback: Just a color tint
+                    # Apply a structural PIL filter to style the original image
                     gray = ImageOps.grayscale(pil_image)
-                    tinted = ImageOps.colorize(gray, black="#0a192f", white="#64ffda")
+                    dark, light = FALLBACK_COLORS.get(paint_color, ("#0a192f", "#64ffda"))
+                    tinted = ImageOps.colorize(gray, black=dark, white=light)
+                    
+                    # Add contrast
+                    enhancer = ImageEnhance.Contrast(tinted)
+                    tinted = enhancer.enhance(1.2)
+                    
+                    # Blend with the original image based on strength
                     mock_image = Image.blend(pil_image, tinted.convert('RGB'), alpha=min(strength, 1.0))
+                except Exception as e:
+                    print(f"Fallback filter failed: {e}")
+                    mock_image = pil_image
                 
                 buffer = BytesIO()
                 mock_image.save(buffer, format="PNG")
@@ -342,7 +301,8 @@ def image_style_view(request):
                 output_image = f"data:image/png;base64,{img_b64}"
                 
                 if request.GET.get('ajax'):
-                    return JsonResponse({'output_image': output_image, 'mock': True})
+                    error_msg = f"API Error {response.status_code}. (Check your credits). Showing basic color filter fallback."
+                    return JsonResponse({'output_image': output_image, 'mock': True, 'api_error': error_msg})
                 
                 messages.warning(request, "API Limit Reached. Showing structural edge blend fallback.")
                 return render(request, 'upload_style.html', {'output_image': output_image})
