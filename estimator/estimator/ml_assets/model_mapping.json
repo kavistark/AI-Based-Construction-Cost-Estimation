@@ -1,0 +1,53 @@
+{
+  "material": [
+    "High (Premium materials)",
+    "Low (Basic materials)",
+    "Medium (Standard materials)"
+  ],
+  "paint": [
+    "Basic Paint",
+    "Emulsion Paint",
+    "Premium Paint"
+  ],
+  "house": [
+    "1BHK",
+    "2BHK",
+    "3BHK"
+  ],
+  "room": [
+    "Bathroom",
+    "Bedroom",
+    "Kitchen",
+    "Living Room"
+  ],
+  "theme": [
+    "Beige & Cream",
+    "Bold Red & Charcoal",
+    "Charcoal & Teal",
+    "Classic White",
+    "Dusty Rose & Grey",
+    "Earthy Tones",
+    "Monochrome Black & White",
+    "Mustard & Teal",
+    "Navy & Gold",
+    "Olive Green & Wood",
+    "Pastel Blue & White",
+    "Sage Green & White",
+    "Terracotta & Off-White",
+    "Warm Walnut & Ivory",
+    "White & Grey"
+  ],
+  "budget": [
+    "₹10L – ₹15L",
+    "₹15L – ₹25L",
+    "₹25L – ₹40L",
+    "₹2L – ₹5L",
+    "₹40L – ₹60L",
+    "₹5L – ₹10L"
+  ],
+  "metrics": {
+    "mae": 12607.15713559536,
+    "r2": 0.9997082786676692,
+    "rmse": 18420.657950134224
+  }
+}

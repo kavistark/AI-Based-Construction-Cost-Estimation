@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4 pb-4">
+    <div class="row g-4">
+
+        <!-- Profile Card -->
+        <div class="col-lg-4">
+            <div class="card glass border-0 rounded-4 shadow-lg p-4 text-center mb-4 position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100" style="height:3px;background:linear-gradient(90deg,var(--primary),var(--secondary));"></div>
+                <div class="bg-primary bg-opacity-15 rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3 border border-primary border-opacity-25" style="width:90px;height:90px;">
+                    <i class="fa-solid fa-user-astronaut fs-1 text-primary"></i>
+                </div>
+                {% if user.is_authenticated %}
+                <h4 class="fw-bold text-white mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                <p class="text-secondary small mb-3">{{ user.email }}</p>
+                {% else %}
+                <h4 class="fw-bold text-white mb-1">Guest User</h4>
+                <p class="text-secondary small mb-3">Not logged in</p>
+                {% endif %}
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="bg-dark bg-opacity-50 rounded-3 p-2 border border-secondary border-opacity-15">
+                            <div class="fs-4 fw-bold gradient-text">{{ projects|length }}</div>
+                            <div class="text-secondary small">Estimates</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-dark bg-opacity-50 rounded-3 p-2 border border-secondary border-opacity-15">
+                            <div class="fs-4 fw-bold gradient-text">0.9997</div>
+                            <div class="text-secondary small">R² Score</div>
+                        </div>
+                    </div>
+                </div>
+                {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100 rounded-pill small">
+                    <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary w-100 rounded-pill small">Login</a>
+                {% endif %}
+            </div>
+
+            <!-- ML Model Stats -->
+            <div class="card glass border-0 rounded-4 shadow-lg p-4">
+                <h6 class="text-white fw-bold text-uppercase tracking-wider mb-3"><i class="fa-solid fa-brain text-primary me-2"></i>ML Model Info</h6>
+                <div class="d-flex flex-column gap-2 small">
+                    <div class="d-flex justify-content-between border-bottom border-secondary border-opacity-15 pb-2">
+                        <span class="text-secondary">Algorithm</span><span class="text-white fw-medium">GradientBoosting</span>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom border-secondary border-opacity-15 pb-2">
+                        <span class="text-secondary">Training Records</span><span class="text-white fw-medium">10,000</span>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom border-secondary border-opacity-15 pb-2">
+                        <span class="text-secondary">R² Score</span><span class="text-success fw-bold">0.9997</span>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom border-secondary border-opacity-15 pb-2">
+                        <span class="text-secondary">MAE</span><span class="text-white fw-medium">₹12,607</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary">Features</span><span class="text-white fw-medium">8 inputs</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Projects -->
+        <div class="col-lg-8">
+            <div class="card glass border-0 rounded-4 shadow-lg overflow-hidden position-relative">
+                <div class="position-absolute top-0 start-0 w-100" style="height:3px;background:linear-gradient(90deg,var(--secondary),var(--primary));"></div>
+                <div class="card-body p-4 p-xl-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary border-opacity-25 pb-3">
+                        <h5 class="fw-bold text-white mb-0 tracking-wider text-uppercase">
+                            <i class="fa-solid fa-folder-open text-primary me-2"></i>Saved Estimates
+                        </h5>
+                        <span class="badge bg-primary bg-opacity-20 text-primary border border-primary border-opacity-25 rounded-pill">{{ projects|length }} Records</span>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        {% if projects %}
+                            {% for project in projects %}
+                            <div class="p-3 bg-dark bg-opacity-40 border border-secondary border-opacity-20 rounded-3 position-relative overflow-hidden">
+                                <div class="position-absolute start-0 top-0 bottom-0" style="width:3px;background:linear-gradient(180deg,var(--primary),var(--secondary));border-radius:3px 0 0 3px;"></div>
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 ps-2">
+                                    <div>
+                                        <h6 class="text-white fw-bold mb-1">
+                                            <i class="fa-solid fa-building text-info me-2 small"></i>
+                                            {{ project.house_type }} · {{ project.rooms }} Rooms
+                                        </h6>
+                                        <div class="d-flex flex-wrap gap-2 mb-1">
+                                            <span class="badge bg-dark border border-secondary border-opacity-25 text-secondary small">{{ project.plot_area }} sq ft</span>
+                                            <span class="badge bg-dark border border-secondary border-opacity-25 text-secondary small">{{ project.material_quality|truncatechars:15 }}</span>
+                                            <span class="badge bg-dark border border-secondary border-opacity-25 text-secondary small">{{ project.theme|truncatechars:18 }}</span>
+                                        </div>
+                                        <p class="text-muted small mb-0 opacity-50">
+                                            <i class="fa-solid fa-brain me-1"></i>GradientBoosting ML ·
+                                            {% if project.created_at %}{{ project.created_at|date:"d M Y" }}{% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="text-end">
+                                        <h5 class="gradient-text fw-bold mb-0">₹ {{ project.estimated_cost|floatformat:0 }}</h5>
+                                        <small class="text-secondary">Total Est.</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5 opacity-50">
+                                <i class="fa-solid fa-folder-open fs-1 text-secondary mb-3 d-block"></i>
+                                <h6 class="text-white tracking-wider">No Saved Estimates Yet</h6>
+                                <p class="text-secondary small">Submit an estimate from the home page to see it here.</p>
+                                <a href="{% url 'home' %}" class="btn btn-sm btn-outline-primary rounded-pill mt-1">Start Estimating</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>.tracking-wider{letter-spacing:.12em}</style>
+{% endblock %}

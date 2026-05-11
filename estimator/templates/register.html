@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center my-4" style="min-height: 80vh;">
+    <div class="card glass border-0 rounded-4 shadow-lg p-md-5 p-4 w-100 position-relative overflow-hidden" style="max-width: 650px;">
+        <div class="position-absolute top-0 start-0 w-100" style="height: 4px; background: linear-gradient(90deg, var(--primary), var(--secondary));"></div>
+        <div class="text-center mb-5 mt-2">
+            <h2 class="fw-bold text-white mb-2">Create an Account</h2>
+            <p class="text-secondary mb-0">Join us to save estimates and access AI planning</p>
+        </div>
+        <form action="#" method="POST">
+            {% csrf_token %}
+            <div class="row g-4 mb-4">
+                <div class="col-sm-6">
+                    <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">First Name</label>
+                    <input type="text" class="form-control form-control-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input text-light py-3 fs-6" name="first_name" placeholder="John" required>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Last Name</label>
+                    <input type="text" class="form-control form-control-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input text-light py-3 fs-6" name="last_name" placeholder="Doe" required>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Email Address</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input text-secondary border-end-0 py-3 px-4"><i class="fa-solid fa-envelope"></i></span>
+                    <input type="email" class="form-control form-control-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input border-start-0 py-3 text-light fs-6" name="email" placeholder="john@example.com" required>
+                </div>
+            </div>
+            <div class="row g-4 mb-4">
+                <div class="col-sm-6">
+                    <label class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input text-secondary border-end-0 py-3 px-4"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" class="form-control form-control-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input border-start-0 py-3 text-light fs-6" name="password" placeholder="Strong password" required>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-glow btn-lg w-100 rounded-pill py-3 fw-bold shadow mt-4">Create Account</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
