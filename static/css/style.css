@@ -1,0 +1,68 @@
+:root {
+    --bg-base: #06080f;
+    --primary: #6366f1;
+    --secondary: #8b5cf6;
+    --glass-bg: rgba(14, 18, 30, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.08);
+}
+body {
+    background-color: var(--bg-base);
+    font-family: 'Outfit', sans-serif;
+    color: #f8fafc;
+}
+.tracking-wider { letter-spacing: 0.05em; }
+
+/* Blob Backgrounds */
+.background-effects {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -1; overflow: hidden;
+}
+.blob {
+    position: absolute; filter: blur(120px); opacity: 0.5;
+    border-radius: 50%; animation: float 20s infinite ease-in-out alternate;
+}
+.blob-1 { top: -10%; left: -10%; width: 600px; height: 600px; background: #4F46E5; }
+.blob-2 { bottom: -20%; right: -10%; width: 700px; height: 700px; background: #8B5CF6; animation-delay: -5s; }
+
+@keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(50px, 50px) scale(1.1); }
+}
+
+/* Base utilities */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border) !important;
+}
+.gradient-text {
+    background: linear-gradient(135deg, #60A5FA, #A78BFA);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Button UI */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none; color: white; transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Input overriding */
+.custom-input { transition: all 0.3s ease; }
+.custom-input:focus, .input-group:focus-within .form-control {
+    border-color: var(--primary) !important; box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+    background-color: rgba(0, 0, 0, 0.4) !important;
+}
+.input-group:focus-within .input-group-text { color: var(--primary) !important; border-color: var(--primary) !important; }
+
+/* File Area Dashboard */
+.file-drop-area { background-color: rgba(0, 0, 0, 0.2); border-width: 2px !important; transition: all 0.3s ease; }
+.file-drop-area:hover { border-color: var(--primary) !important; background-color: rgba(99, 102, 241, 0.05); }
+.border-dashed { border-style: dashed !important; }
+
+/* Select Arrow Fix Base */
+.form-select.custom-input option { background-color: #161A2B; color: #F8FAFC; }

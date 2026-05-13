@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="card glass border-0 rounded-4 shadow-lg p-md-5 p-4 w-100 position-relative overflow-hidden" style="max-width: 500px;">
+        <div class="position-absolute top-0 start-0 w-100" style="height: 4px; background: linear-gradient(90deg, var(--primary), var(--secondary));"></div>
+        <div class="text-center mb-5 mt-2">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4 border border-primary border-opacity-25" style="width: 75px; height: 75px;">
+                <i class="fa-solid fa-user-lock fs-2"></i>
+            </div>
+            <h2 class="fw-bold text-white mb-2">Welcome Back</h2>
+            <p class="text-secondary mb-0">Login to access your saved projects and estimates</p>
+        </div>
+        <form action="#" method="POST">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="username" class="form-label text-secondary fw-medium small text-uppercase tracking-wider">Username / Email</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input text-secondary border-end-0 py-3 px-4"><i class="fa-solid fa-envelope"></i></span>
+                    <input type="text" class="form-control form-control-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input border-start-0 py-3 text-light fs-6" id="username" name="username" placeholder="Enter your email" required>
+                </div>
+            </div>
+        <div class="mb-4">
+            <label for="password" class="form-label text-secondary fw-medium small text-uppercase">
+                Password
+            </label>
+
+            <div class="input-group">
+                <span class="input-group-text bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input border-end-0 py-3 px-4">
+                    <i class="fa-solid fa-lock"></i>
+                </span>
+
+                <input type="password"
+                    class="form-control form-control-lg bg-dark bg-opacity-50 border-secondary border-opacity-50 custom-input border-start-0 py-3 text-light fs-6"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required>
+            </div>
+
+    <!-- Links -->
+                    <div class="d-flex justify-content-between mt-2">
+                        <a href="#" class="small text-secondary text-decoration-none hover-text-primary">
+                            Forgot Password?
+                        </a>
+
+                        <a href="{% url 'register' %}" class="small text-secondary text-decoration-none hover-text-primary">
+                            Register here
+                        </a>
+                    </div>
+                </div>
+            <button type="submit" class="btn btn-primary btn-glow btn-lg w-100 rounded-pill py-3 fw-bold shadow">Login to Account</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
